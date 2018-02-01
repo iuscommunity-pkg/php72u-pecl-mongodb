@@ -26,8 +26,8 @@ Version:        1.3.4
 Release:        1.ius%{?dist}
 License:        ASL 2.0
 Group:          Development/Languages
-URL:            http://pecl.php.net/package/%{pecl_name}
-Source0:        http://pecl.php.net/get/%{pecl_name}-%{version}.tgz
+URL:            https://pecl.php.net/package/%{pecl_name}
+Source0:        https://pecl.php.net/get/%{pecl_name}-%{version}.tgz
 
 BuildRequires:  %{php}-devel
 BuildRequires:  pecl >= 1.10.0
@@ -88,7 +88,7 @@ if test "x${extver}" != "x%{version}"; then
    exit 1
 fi
 
-%if %{with_zts}
+%if %{with zts}
 # Duplicate source tree for NTS / ZTS build
 cp -pr NTS ZTS
 %endif
@@ -118,14 +118,14 @@ peclbuild() {
     %{?_with_libmongoc} \
     --enable-mongodb
 
-  make %{?_smp_mflags}
+  %make_build
 }
 
 pushd NTS
 peclbuild php
 popd
 
-%if %{with_zts}
+%if %{with zts}
 pushd ZTS
 peclbuild zts-php
 popd
@@ -134,22 +134,19 @@ popd
 
 %install
 make -C NTS install INSTALL_ROOT=%{buildroot}
-
-# install config file
 install -D -m 644 %{ini_name} %{buildroot}%{php_inidir}/%{ini_name}
 
 # Install XML package description
 install -D -m 644 package.xml %{buildroot}%{pecl_xmldir}/%{pecl_name}.xml
 
-%if %{with_zts}
+%if %{with zts}
 make -C ZTS install INSTALL_ROOT=%{buildroot}
-
 install -D -m 644 %{ini_name} %{buildroot}%{php_ztsinidir}/%{ini_name}
 %endif
 
 # Documentation
 for i in $(grep 'role="doc"' package.xml | sed -e 's/^.*name="//;s/".*$//')
-do install -Dpm 644 NTS/$i %{buildroot}%{pecl_docdir}/%{pecl_name}/$i
+do install -D -p -m 644 NTS/$i %{buildroot}%{pecl_docdir}/%{pecl_name}/$i
 done
 
 
@@ -162,7 +159,7 @@ OPT="-n"
     --define extension=%{buildroot}%{php_extdir}/%{pecl_name}.so \
     --modules | grep %{pecl_name}
 
-%if %{with_zts}
+%if %{with zts}
 : Minimal load test for ZTS extension
 %{__ztsphp} $OPT \
     --define extension=%{buildroot}%{php_ztsextdir}/%{pecl_name}.so \
@@ -188,7 +185,7 @@ fi
 %config(noreplace) %{php_inidir}/%{ini_name}
 %{php_extdir}/%{pecl_name}.so
 
-%if %{with_zts}
+%if %{with zts}
 %config(noreplace) %{php_ztsinidir}/%{ini_name}
 %{php_ztsextdir}/%{pecl_name}.so
 %endif
